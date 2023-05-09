@@ -86,7 +86,7 @@ class TimelinePlugin extends BasePlugin<TimelinePluginEvents, TimelinePluginOpti
   private formatTime(seconds: number): string {
     if (seconds / 60 > 1) {
       // calculate minutes and seconds from seconds count
-      const minutes = Math.round(seconds / 60)
+      const minutes = Math.floor(seconds / 60)
       seconds = Math.round(seconds % 60)
       const paddedSeconds = `${seconds < 10 ? '0' : ''}${seconds}`
       return `${minutes}:${paddedSeconds}`
