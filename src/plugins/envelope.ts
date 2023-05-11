@@ -376,27 +376,53 @@ class EnvelopePlugin extends BasePlugin<EnvelopePluginEvents, EnvelopePluginOpti
     this.subscriptions.push(unsub)
   }
 
+  private moveDragPointToTime(point: 'fadeInEnd' | 'fadeOutStart', time: number) {
+    if (!this.svg || !this.wavesurfer) return
+
+    const polyline = this.svg.querySelector('polyline') as SVGPolylineElement
+    const points = polyline.points
+    const width = this.svg.clientWidth
+    const duration = this.wavesurfer.getDuration()
+    const x = (time / duration) * width
+
+    points.getItem(point === 'fadeInEnd' ? 1 : 2).x = x
+  }
+
   /** Get the current audio volume */
   public getCurrentVolume() {
     return this.gainNode ? this.gainNode.gain.value : this.volume
   }
 
-  /** Set the fade-in start time */
-  public setStartTime(time: number, moveDragPoint?: boolean) {
+  /**
+   * Set the fade-in start time.
+   * @param time The time (in seconds) to set the fade-in start time to
+   * @param moveDragPoint Whether to move the drag point to the new time (default: false)
+   */
+  public setStartTime(time: number, moveDragPoint = false) {
     const rampLength = this.options.fadeInEnd - this.options.fadeInStart
+
     this.options.fadeInStart = time
+
     if (moveDragPoint) {
       this.options.fadeInEnd = time + rampLength
+      this.moveDragPointToTime('fadeInEnd', this.options.fadeInEnd)
     }
+
     this.renderPolyline()
   }
 
-  /** Set the fade-out end time */
-  public setEndTime(time: number, moveDragPoint?: boolean) {
+  /** Set the fade-in end time.
+   * @param time The time (in seconds) to set the fade-in end time to
+   * @param moveDragPoint Whether to move the drag point to the new time (default: false)
+   */
+  public setEndTime(time: number, moveDragPoint = false) {
     const rampLength = this.options.fadeOutEnd - this.options.fadeOutStart
+
     this.options.fadeOutEnd = time
+
     if (moveDragPoint) {
       this.options.fadeOutStart = time - rampLength
+      this.moveDragPointToTime('fadeOutStart', this.options.fadeOutStart)
     }
     this.renderPolyline()
   }
