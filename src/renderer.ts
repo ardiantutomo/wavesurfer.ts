@@ -24,6 +24,7 @@ export type RendererStyleOptions = {
 type RendererEvents = {
   click: [relativeX: number]
   scroll: [relativeStart: number, relativeEnd: number]
+  render: []
 }
 
 type ChannelData = Float32Array[] | Array<number[]>
@@ -337,6 +338,8 @@ class Renderer extends EventEmitter<RendererEvents> {
 
     this.channelData = channelData
     this.duration = duration
+
+    this.emit('render')
   }
 
   reRender() {

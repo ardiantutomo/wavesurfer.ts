@@ -38,12 +38,12 @@ wavesurfer.js v7 (aka wavesurfer.ts) brings several improvements:
 ## Plugins
 The "official" plugins have been completely rewritten and enhanced:
 
- * [Regions](https://wavesurfer-ts.pages.dev/tutorial/#/examples/regions.js) – now also replaces the old Markers plugin
- * [Timeline](https://wavesurfer-ts.pages.dev/tutorial/#/examples/timeline.js) – displays notches and time labels below the waveform
- * [Minimap](https://wavesurfer-ts.pages.dev/tutorial/#/examples/minimap.js) – a small waveform that serves as a scrollbar for the main waveform
- * [Envelope](https://wavesurfer-ts.pages.dev/tutorial/#/examples/envelope.js) – a graphical interface to add fade-in and -out effects and control volume
- * [Record](https://wavesurfer-ts.pages.dev/tutorial/#/examples/record.js) – records audio from the microphone and renders a waveform
- * [Spectrogram](https://wavesurfer-ts.pages.dev/tutorial/#/examples/spectrogram.js) – visualization of an audio frequency spectrum
+ * [Regions](https://wavesurfer.pages.dev/examples/#regions.js) – now also replaces the old Markers plugin
+ * [Timeline](https://wavesurfer.pages.dev/examples/#timeline.js) – displays notches and time labels below the waveform
+ * [Minimap](https://wavesurfer.pages.dev/examples/#minimap.js) – a small waveform that serves as a scrollbar for the main waveform
+ * [Envelope](https://wavesurfer.pages.dev/examples/#envelope.js) – a graphical interface to add fade-in and -out effects and control volume
+ * [Record](https://wavesurfer.pages.dev/examples/#record.js) – records audio from the microphone and renders a waveform
+ * [Spectrogram](https://wavesurfer.pages.dev/examples/#spectrogram.js) – visualization of an audio frequency spectrum
 
 ## Documentation
 See the documentation on wavesurfer.js [methods](https://wavesurfer-ts.pages.dev/docs/classes/wavesurfer.WaveSurfer), [options](https://wavesurfer-ts.pages.dev/docs/types/wavesurfer.WaveSurferOptions) and [events](https://wavesurfer-ts.pages.dev/docs/types/wavesurfer.WaveSurferEvents) on our website.
@@ -53,7 +53,7 @@ See the documentation on wavesurfer.js [methods](https://wavesurfer-ts.pages.dev
 Most options, events, and methods are similar to those in previous versions.
 
 ### Notable differences
- * The `backend` option is removed – HTML5 audio (or video) is the only playback mechanism. However, you can still connect wavesurfer to Web Audio via `MediaElementSourceNode`. See this [example](https://wavesurfer-ts.pages.dev/tutorial/#/examples/webaudio.js).
+ * The `backend` option is removed – HTML5 audio (or video) is the only playback mechanism. However, you can still connect wavesurfer to Web Audio via `MediaElementSourceNode`. See this [example](https://wavesurfer.pages.dev/examples/#webaudio.js).
  * The Markers plugin is removed – use the Regions plugin with `startTime` equal to `endTime`.
  * No Microphone plugn – superseded by the new Record plugin with more features.
  * No Cursor and Playhead plugins yet – to be done.
@@ -68,7 +68,7 @@ Most options, events, and methods are similar to those in previous versions.
  * `toggleMute` is now called `setMuted(true | false)`
  * `setHeight`, `setWaveColor`, `setCursorColor`, etc. – use `setOptions` with the corresponding params instead. E.g., `wavesurfer.setOptions({ height: 300, waveColor: '#abc' })`
 
-See the complete [documentation of the new API](https://wavesurfer-ts.pages.dev/docs/classes/wavesurfer.WaveSurfer).
+See the complete [documentation of the new API](https://wavesurfer-ts.pages.dev/docs/modules/wavesurfer).
 
 ## Development
 

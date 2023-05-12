@@ -199,6 +199,10 @@ class WaveSurfer extends Player<WaveSurferEvents> {
         const duration = this.getDuration()
         this.emit('scroll', startX * duration, endX * duration)
       }),
+
+      this.renderer.on('render', () => {
+        this.emit('redraw')
+      }),
     )
   }
 
@@ -279,7 +283,6 @@ class WaveSurfer extends Player<WaveSurferEvents> {
 
     this.renderAudio()
     this.emit('decode', this.getDuration())
-    this.emit('redraw')
   }
 
   private renderAudio() {
