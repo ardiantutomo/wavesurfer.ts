@@ -11,23 +11,25 @@ const wavesurfer = WaveSurfer.create({
 })
 
 const audioContext = new AudioContext()
-let analyser = null
-let dataArray = null
 
-function playFMNote(frequency, modulationFrequency, modulationDepth, duration) {
+// Create an analyser node
+const analyser = audioContext.createAnalyser()
+analyser.fftSize = 512 * 2
+analyser.connect(audioContext.destination)
+const dataArray = new Float32Array(analyser.frequencyBinCount)
+
+// 6-voice polyphony
+const voices = new Array(6).fill(null).map(() => {
   // Carrier oscillator
   const carrierOsc = audioContext.createOscillator()
   carrierOsc.type = 'sine'
-  carrierOsc.frequency.value = frequency
 
   // Modulator oscillator
   const modulatorOsc = audioContext.createOscillator()
   modulatorOsc.type = 'sine'
-  modulatorOsc.frequency.value = modulationFrequency
 
   // Modulation depth
   const modulationGain = audioContext.createGain()
-  modulationGain.gain.value = modulationDepth
 
   // Connect the modulator to the carrier frequency
   modulatorOsc.connect(modulationGain)
@@ -35,30 +37,65 @@ function playFMNote(frequency, modulationFrequency, modulationDepth, duration) {
 
   // Create an output gain
   const outputGain = audioContext.createGain()
-  outputGain.gain.setValueAtTime(0.8, audioContext.currentTime)
-  outputGain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + duration)
+  outputGain.gain.value = 0
 
   // Connect carrier oscillator to output
   carrierOsc.connect(outputGain)
 
-  analyser = audioContext.createAnalyser()
-  analyser.fftSize = 512 * 2
+  // Connect output to analyser
   outputGain.connect(analyser)
-
-  analyser.connect(audioContext.destination)
 
   // Start oscillators
   carrierOsc.start()
   modulatorOsc.start()
 
-  // Stop oscillators after the duration
-  carrierOsc.stop(audioContext.currentTime + duration)
-  modulatorOsc.stop(audioContext.currentTime + duration)
+  return {
+    carrierOsc,
+    modulatorOsc,
+    modulationGain,
+    outputGain,
+  }
+})
+
+let lastVoice = 0
+
+function playNote(frequency, modulationFrequency, modulationDepth, duration) {
+  if (voices[lastVoice].outputGain.gain.value > 0) {
+    lastVoice = (lastVoice + 1) % voices.length
+  }
+
+  const voice = voices[lastVoice]
+
+  const {
+    carrierOsc,
+    modulatorOsc,
+    modulationGain,
+    outputGain,
+  } = voice
+
+  carrierOsc.frequency.value = frequency
+  modulatorOsc.frequency.value = modulationFrequency
+  modulationGain.gain.value = modulationDepth
+
+  outputGain.gain.setValueAtTime(0.00001, audioContext.currentTime)
+  outputGain.gain.exponentialRampToValueAtTime(0.8, audioContext.currentTime + duration / 1000)
+
+  return voice
+}
+
+function releaseNote(voice, duration) {
+  const { outputGain } = voice
+  outputGain.gain.cancelScheduledValues(audioContext.currentTime)
+  outputGain.gain.setValueAtTime(outputGain.gain.value * 1, audioContext.currentTime)
+  outputGain.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + duration / 1000)
+  setTimeout(() => {
+    outputGain.gain.value = 0
+  }, duration)
 }
 
 function createPianoRoll() {
   const baseFrequency = 55
-  const numRows = 5
+  const numRows = 4
   const numCols = 12
 
   const noteFrequency = (row, col) => {
@@ -66,60 +103,93 @@ function createPianoRoll() {
   }
 
   const pianoRoll = document.getElementById('pianoRoll')
-  const qwerty = "`1234567890-=qwertyuiop[]asdfghjkl;'zxcvbnm,./~!@#$%^&*()_+≠"
+  const qwerty = "`1234567890-=qwertyuiop[]asdfghjkl;'zxcvbnm,./üä"
+  const capsQwerty = "~!@#$%^&*()_+QWERTYUIOP{}ASDFGHJKL:\"ZXCVBNM<>?üä"
+
+  const onKeyDown = (freq) => {
+    const modulationIndex = parseFloat(document.getElementById('modulationIndex').value)
+    const modulationDepth = parseFloat(document.getElementById('modulationDepth').value)
+    const duration = parseFloat(document.getElementById('duration').value)
+    return playNote(freq, freq * modulationIndex, modulationDepth, duration)
+  }
+
+  const onKeyUp = (voice) => {
+    const duration = parseFloat(document.getElementById('duration').value)
+    releaseNote(voice, duration)
+  }
+
+  const createButton = (row, col) => {
+    const button = document.createElement('button')
+    const key = qwerty[(row * numCols + col) % qwerty.length]
+    const capsKey = capsQwerty[(row * numCols + col) % capsQwerty.length]
+    const frequency = noteFrequency(row, col)
+    let note = null
+
+    button.textContent = key
+    button.style.textTransform = 'inherit'
+    pianoRoll.appendChild(button)
+
+    // Mouse
+    button.addEventListener('mousedown', (e) => {
+      note = onKeyDown(frequency * (e.shiftKey ? numRows : 1))
+    })
+    button.addEventListener('mouseup', () => {
+      if (note) {
+        onKeyUp(note)
+        note = null
+      }
+    })
+
+    // Keyboard
+    document.addEventListener('keydown', (e) => {
+      if (e.key === key || e.key === capsKey) {
+        button.className = 'active'
+        if (!note) {
+          note = onKeyDown(frequency * (e.shiftKey ? numRows : 1))
+        }
+      }
+    })
+    document.addEventListener('keyup', (e) => {
+      if (e.key === key || e.key === capsKey) {
+        button.className = ''
+        if (note) {
+          onKeyUp(note)
+          note = null
+        }
+      }
+    })
+  }
 
   for (let row = 0; row < numRows; row++) {
     for (let col = 0; col < numCols; col++) {
-      const button = document.createElement('button')
-      const key = qwerty[(row * numCols + col) % qwerty.length]
-      button.textContent = key
-
-      button.addEventListener('mousedown', () => {
-        const frequency = noteFrequency(row, col)
-        const modulationIndex = parseFloat(document.getElementById('modulationIndex').value)
-        const modulationDepth = parseFloat(document.getElementById('modulationDepth').value)
-        const duration = parseFloat(document.getElementById('duration').value)
-        playFMNote(frequency, frequency * modulationIndex, modulationDepth, duration)
-      })
-
-      pianoRoll.appendChild(button)
-
-      document.addEventListener('keydown', (e) => {
-        if (e.key === key) {
-          button.className = 'active'
-          button.dispatchEvent(new MouseEvent('mousedown'))
-        }
-      })
-      document.addEventListener('keyup', (e) => {
-        if (e.key === key) {
-          setTimeout(() => {
-            button.className = ''
-          }, duration * 1000)
-        }
-      })
+      createButton(row, col)
     }
   }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.shiftKey) {
+      pianoRoll.style.textTransform = 'uppercase'
+    }
+  })
+  document.addEventListener('keyup', (e) => {
+    if (!e.shiftKey) {
+      pianoRoll.style.textTransform = ''
+    }
+  })
 }
 
 function randomizeFmParams() {
   document.getElementById('modulationIndex').value = Math.random() * 10
   document.getElementById('modulationDepth').value = Math.random() * 200
-  document.getElementById('duration').value = Math.random() * 5
+  document.getElementById('duration').value = Math.random() * 300
 }
 
 // Draw the waveform
 function drawWaveform() {
-  if (!analyser) return
-
-  if (!dataArray) {
-    const bufferLength = analyser.frequencyBinCount
-    dataArray = new Float32Array(bufferLength)
-  }
-
   // Get the waveform data from the analyser
-  analyser.getFloatTimeDomainData(dataArray)
-
-  waveform && wavesurfer.load('', [dataArray], parseFloat(document.getElementById('duration').value))
+  analyser.getFloatTimeDomainData(dataArray);
+  const duration = document.getElementById('duration').valueAsNumber
+  waveform && wavesurfer.load('', [dataArray], duration)
 }
 
 function animate() {
@@ -169,9 +239,12 @@ randomizeFmParams()
     <input type="range" min="1" max="200" value="50" step="1" id="modulationDepth">
   </div>
   <div>
-    <label>Duration (seconds):</label>
-    <input type="range" min="0.1" max="5" value="2" step="0.1" id="duration">
+    <label>Attack/release duration:</label>
+    <input type="range" min="10" max="300" value="10" step="10" id="duration">
   </div>
+  <p>
+    Hold Shift to play the notes one octave higher
+  </p>
   <div id="pianoRoll"></div>
   <div id="waveform"></div>
 </html>
