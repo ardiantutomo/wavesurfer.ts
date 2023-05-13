@@ -127,6 +127,9 @@ class Polyline extends EventEmitter<{
     })
 
     draggable.addEventListener('mousedown', (e) => {
+      e.preventDefault()
+      e.stopPropagation()
+
       let x = e.clientX
       let y = e.clientY
 

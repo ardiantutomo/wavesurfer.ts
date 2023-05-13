@@ -23,6 +23,7 @@ export type RendererStyleOptions = {
 
 type RendererEvents = {
   click: [relativeX: number]
+  drag: [relativeX: number]
   scroll: [relativeStart: number, relativeEnd: number]
   render: []
 }
@@ -78,6 +79,30 @@ class Renderer extends EventEmitter<RendererEvents> {
       const x = e.clientX - rect.left
       const relativeX = x / rect.width
       this.emit('click', relativeX)
+    })
+
+    // Drag
+    this.wrapper.addEventListener('mousedown', (e) => {
+      let x = e.clientX
+      let firstMove = true
+      const move = (e: MouseEvent) => {
+        const dx = e.clientX - x
+        x = e.clientX
+        if (dx !== 0) {
+          const rect = this.wrapper.getBoundingClientRect()
+          if (firstMove) {
+            firstMove = false
+            this.emit('click', (x - rect.left) / rect.width)
+          }
+          this.emit('drag', dx / rect.width)
+        }
+      }
+      const up = () => {
+        document.removeEventListener('mousemove', move)
+        document.removeEventListener('mouseup', up)
+      }
+      document.addEventListener('mousemove', move)
+      document.addEventListener('mouseup', up)
     })
 
     // Add a scroll listener

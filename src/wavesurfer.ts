@@ -194,6 +194,14 @@ class WaveSurfer extends Player<WaveSurferEvents> {
         }
       }),
 
+      this.renderer.on('drag', (relativeX) => {
+        if (this.options.interact) {
+          const newTime = this.getCurrentTime() + this.getDuration() * relativeX
+          this.canPlay && this.setTime(newTime)
+          this.emit('interaction')
+        }
+      }),
+
       this.renderer.on('scroll', (startX, endX) => {
         const duration = this.getDuration()
         this.emit('scroll', startX * duration, endX * duration)
