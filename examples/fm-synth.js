@@ -18,8 +18,7 @@ analyser.fftSize = 512 * 2
 analyser.connect(audioContext.destination)
 const dataArray = new Float32Array(analyser.frequencyBinCount)
 
-// 6-voice polyphony
-const voices = new Array(6).fill(null).map(() => {
+function createVoice() {
   // Carrier oscillator
   const carrierOsc = audioContext.createOscillator()
   carrierOsc.type = 'sine'
@@ -55,17 +54,10 @@ const voices = new Array(6).fill(null).map(() => {
     modulationGain,
     outputGain,
   }
-})
-
-let lastVoice = 0
+}
 
 function playNote(frequency, modulationFrequency, modulationDepth, duration) {
-  if (voices[lastVoice].outputGain.gain.value > 0) {
-    lastVoice = (lastVoice + 1) % voices.length
-  }
-
-  const voice = voices[lastVoice]
-
+  const voice = createVoice()
   const { carrierOsc, modulatorOsc, modulationGain, outputGain } = voice
 
   carrierOsc.frequency.value = frequency
@@ -73,33 +65,49 @@ function playNote(frequency, modulationFrequency, modulationDepth, duration) {
   modulationGain.gain.value = modulationDepth
 
   outputGain.gain.setValueAtTime(0.00001, audioContext.currentTime)
-  outputGain.gain.exponentialRampToValueAtTime(0.8, audioContext.currentTime + duration / 1000)
+  outputGain.gain.exponentialRampToValueAtTime(1, audioContext.currentTime + duration / 1000)
 
   return voice
 }
 
 function releaseNote(voice, duration) {
-  const { outputGain } = voice
+  const { carrierOsc, modulatorOsc, modulationGain, outputGain } = voice
   outputGain.gain.cancelScheduledValues(audioContext.currentTime)
-  outputGain.gain.setValueAtTime(outputGain.gain.value * 1, audioContext.currentTime)
+  outputGain.gain.setValueAtTime(1, audioContext.currentTime)
   outputGain.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + duration / 1000)
+
   setTimeout(() => {
-    outputGain.gain.value = 0
-  }, duration)
+    carrierOsc.stop()
+    modulatorOsc.stop()
+    carrierOsc.disconnect()
+    modulatorOsc.disconnect()
+    modulationGain.disconnect()
+    outputGain.disconnect()
+    voice.carrierOsc = null
+    voice.modulatorOsc = null
+    voice.modulationGain = null
+    voice.outputGain = null
+  }, duration + 100)
 }
 
 function createPianoRoll() {
-  const baseFrequency = 55
+  const baseFrequency = 110
   const numRows = 4
-  const numCols = 12
+  const numCols = 10
 
   const noteFrequency = (row, col) => {
-    return baseFrequency * Math.pow(2, (col + row * numCols) / 12)
+    // The top row is the bass
+    // The lower rows represent the notes of a major third chord
+    // Columns represent the notes of a C major scale (there are 10 columns and 4 rows)
+    const chord = [-8, 0, 4, 7]
+    const scale = [0, 2, 4, 5, 7, 9, 11, 12, 14, 16]
+    const note = chord[row] + scale[col]
+    return baseFrequency * Math.pow(2, note / 12)
   }
 
   const pianoRoll = document.getElementById('pianoRoll')
-  const qwerty = "`1234567890-=qwertyuiop[]asdfghjkl;'zxcvbnm,./üä"
-  const capsQwerty = '~!@#$%^&*()_+QWERTYUIOP{}ASDFGHJKL:"ZXCVBNM<>?üä'
+  const qwerty = "1234567890qwertyuiopasdfghjkl;zxcvbnm,./"
+  const capsQwerty = '!@#$%^&*()QWERTYUIOPASDFGHJKL:ZXCVBNM<>?'
 
   const onKeyDown = (freq) => {
     const modulationIndex = parseFloat(document.getElementById('modulationIndex').value)
@@ -121,7 +129,6 @@ function createPianoRoll() {
     let note = null
 
     button.textContent = key
-    button.style.textTransform = 'inherit'
     pianoRoll.appendChild(button)
 
     // Mouse
@@ -161,14 +168,19 @@ function createPianoRoll() {
     }
   }
 
+  const buttons = document.querySelectorAll('button')
   document.addEventListener('keydown', (e) => {
     if (e.shiftKey) {
-      pianoRoll.style.textTransform = 'uppercase'
+      Array.from(buttons).forEach((button, index) => {
+        button.textContent = capsQwerty[index]
+      })
     }
   })
   document.addEventListener('keyup', (e) => {
     if (!e.shiftKey) {
-      pianoRoll.style.textTransform = ''
+      Array.from(buttons).forEach((button, index) => {
+        button.textContent = qwerty[index]
+      })
     }
   })
 }
@@ -176,7 +188,7 @@ function createPianoRoll() {
 function randomizeFmParams() {
   document.getElementById('modulationIndex').value = Math.random() * 10
   document.getElementById('modulationDepth').value = Math.random() * 200
-  document.getElementById('duration').value = Math.random() * 300
+  document.getElementById('duration').value = Math.random() * 1000
 }
 
 // Draw the waveform
@@ -207,7 +219,7 @@ randomizeFmParams()
       margin-top: 1em;
       width: 100%;
       display: grid;
-      grid-template-columns: repeat(12, 6vw);
+      grid-template-columns: repeat(10, 6vw);
       grid-template-rows: repeat(5, 6vw);
       gap: 5px;
       user-select: none;
@@ -218,6 +230,15 @@ randomizeFmParams()
       border: 1px solid #aaa;
       background-color: #fff;
       cursor: pointer;
+    }
+    button:nth-child(n + 11):nth-child(-n + 20) {
+      margin-left: 5px;
+    }
+    button:nth-child(n + 21):nth-child(-n + 30) {
+      margin-left: 10px;
+    }
+    button:nth-child(n + 31):nth-child(-n + 40) {
+      margin-left: 15px;
     }
     button.active,
     button:active {
@@ -234,8 +255,8 @@ randomizeFmParams()
     <input type="range" min="1" max="200" value="50" step="1" id="modulationDepth">
   </div>
   <div>
-    <label>Attack/release duration:</label>
-    <input type="range" min="10" max="300" value="10" step="10" id="duration">
+    <label>Attack/release:</label>
+    <input type="range" min="100" max="1000" value="100" step="10" id="duration">
   </div>
   <p>
     Hold Shift to play the notes one octave higher
