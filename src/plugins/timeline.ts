@@ -80,7 +80,9 @@ class TimelinePlugin extends BasePlugin<TimelinePluginEvents, TimelinePluginOpti
   }
 
   private initTimelineWrapper(): HTMLElement {
-    return document.createElement('div')
+    const div = document.createElement('div')
+    div.setAttribute('part', 'timeline')
+    return div
   }
 
   private formatTime(seconds: number): string {

@@ -45,6 +45,27 @@ The "official" plugins have been completely rewritten and enhanced:
  * [Record](https://wavesurfer.pages.dev/examples/#record.js) – records audio from the microphone and renders a waveform
  * [Spectrogram](https://wavesurfer.pages.dev/examples/#spectrogram.js) – visualization of an audio frequency spectrum
 
+## CSS styling
+
+wavesurfer.js v7 is rendered into a Shadow DOM tree. This isolates its CSS from the rest of the web page.
+However, it's still possible to style various wavesurfer.js elements via CSS using the `::part()` pseudo-selector.
+For example:
+
+```css
+#waveform ::part(cursor):before {
+  content: '🏄';
+}
+#waveform ::part(region) {
+  font-family: fantasy;
+}
+```
+
+You can see which elements you can style in the DOM inspector – they will have a `part` attribute.
+
+<img width="466" alt="DOM inspector screenshot" src="https://github.com/katspaugh/wavesurfer.ts/assets/381895/fcfb4e4d-9572-4931-811f-9615b7e3aa85">
+
+See [this example](https://wavesurfer.pages.dev/examples/#styling.js) for play around with styling.
+
 ## Documentation
 See the documentation on wavesurfer.js [methods](https://wavesurfer-ts.pages.dev/docs/classes/wavesurfer.WaveSurfer), [options](https://wavesurfer-ts.pages.dev/docs/types/wavesurfer.WaveSurferOptions) and [events](https://wavesurfer-ts.pages.dev/docs/types/wavesurfer.WaveSurferEvents) on our website.
 

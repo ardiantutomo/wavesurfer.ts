@@ -40,6 +40,7 @@ class Renderer extends EventEmitter<RendererEvents> {
   private wrapper: HTMLElement
   private canvasWrapper: HTMLElement
   private progressWrapper: HTMLElement
+  private cursor: HTMLElement
   private timeout: ReturnType<typeof setTimeout> | null = null
   private isScrolling = false
   private channelData: ChannelData | null = null
@@ -68,6 +69,7 @@ class Renderer extends EventEmitter<RendererEvents> {
     this.wrapper = shadow.querySelector('.wrapper') as HTMLElement
     this.canvasWrapper = shadow.querySelector('.canvases') as HTMLElement
     this.progressWrapper = shadow.querySelector('.progress') as HTMLElement
+    this.cursor = shadow.querySelector('.cursor') as HTMLElement
 
     this.initEvents()
   }
@@ -168,14 +170,24 @@ class Renderer extends EventEmitter<RendererEvents> {
           width: 0;
           height: 100%;
           overflow: hidden;
-          box-sizing: border-box;
+        }
+        :host .cursor {
+          pointer-events: none;
+          position: absolute;
+          z-index: 2;
+          top: 0;
+          left: 0;
+          height: 100%;
+          width: ${this.options.cursorWidth}px;
+          background-color: ${this.options.cursorColor || this.options.progressColor};
         }
       </style>
 
-      <div class="scroll">
+      <div class="scroll" part="scroll">
         <div class="wrapper">
           <div class="canvases"></div>
           <div class="progress"></div>
+          <div class="cursor" part="cursor"></div>
         </div>
       </div>
     `
@@ -353,9 +365,8 @@ class Renderer extends EventEmitter<RendererEvents> {
     // Set additional styles
     this.scrollContainer.style.overflowX = this.isScrolling ? 'auto' : 'hidden'
     this.scrollContainer.classList.toggle('noScrollbar', !!this.options.hideScrollbar)
-    this.progressWrapper.style.borderRightStyle = 'solid'
-    this.progressWrapper.style.borderRightColor = `${this.options.cursorColor || this.options.progressColor}`
-    this.progressWrapper.style.borderRightWidth = `${this.options.cursorWidth}px`
+    this.cursor.style.backgroundColor = `${this.options.cursorColor || this.options.progressColor}`
+    this.cursor.style.width = `${this.options.cursorWidth}px`
     this.canvasWrapper.style.height = `${this.options.height}px`
 
     // Render the waveform
@@ -422,6 +433,7 @@ class Renderer extends EventEmitter<RendererEvents> {
   renderProgress(progress: number, isPlaying?: boolean) {
     if (isNaN(progress)) return
     this.progressWrapper.style.width = `${progress * 100}%`
+    this.cursor.style.left = `${progress * 100}%`
 
     if (this.isScrolling && this.options.autoScroll) {
       this.scrollIntoView(progress, isPlaying)

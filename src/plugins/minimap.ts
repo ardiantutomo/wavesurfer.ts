@@ -68,6 +68,7 @@ class MinimapPlugin extends BasePlugin<MinimapPluginEvents, MinimapPluginOptions
   private initMinimapWrapper(): HTMLElement {
     const div = document.createElement('div')
     div.style.position = 'relative'
+    div.setAttribute('part', 'minimap')
     return div
   }
 

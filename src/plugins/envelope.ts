@@ -59,6 +59,7 @@ class Polyline extends EventEmitter<{
     svg.setAttribute('viewBox', `0 0 ${wrapper.clientWidth} ${wrapper.clientHeight}`)
     svg.setAttribute('preserveAspectRatio', 'none')
     svg.setAttribute('style', 'position: absolute; left: 0; top: 0; z-index: 4; pointer-events: none;')
+    svg.setAttribute('part', 'envelope')
     this.svg = svg
 
     // A polyline representing the envelope
@@ -68,6 +69,7 @@ class Polyline extends EventEmitter<{
     polyline.setAttribute('stroke-width', options.lineWidth)
     polyline.setAttribute('fill', 'none')
     polyline.setAttribute('style', 'pointer-events: none;')
+    polyline.setAttribute('part', 'polyline')
     svg.appendChild(polyline)
 
     // Draggable top line
@@ -75,6 +77,7 @@ class Polyline extends EventEmitter<{
     line.setAttribute('stroke', 'transparent')
     line.setAttribute('stroke-width', (options.lineWidth * 3).toString())
     line.setAttribute('style', 'cursor: ns-resize; pointer-events: all;')
+    line.setAttribute('part', 'line')
     svg.appendChild(line)
 
     // Drag points
@@ -85,6 +88,7 @@ class Polyline extends EventEmitter<{
       circle.setAttribute('stroke', options.dragPointStroke || options.dragPointFill)
       circle.setAttribute('stroke-width', '2')
       circle.setAttribute('style', 'cursor: ew-resize; pointer-events: all;')
+      circle.setAttribute('part', 'circle')
       svg.appendChild(circle)
     })
 

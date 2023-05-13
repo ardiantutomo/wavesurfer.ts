@@ -124,7 +124,7 @@ export class Region extends EventEmitter<RegionEvents> {
   constructor(params: RegionParams, private totalDuration: number) {
     super()
 
-    this.id = params.id || Math.random().toString(32).slice(2)
+    this.id = params.id || `region-${Math.random().toString(32).slice(2)}`
     this.start = params.start
     this.end = params.end ?? params.start
     this.drag = params.drag ?? true
@@ -139,8 +139,7 @@ export class Region extends EventEmitter<RegionEvents> {
     const element = document.createElement('div')
     const isMarker = this.start === this.end
 
-    element.id = this.id
-
+    element.setAttribute('part', `${isMarker ? 'marker' : 'region'} ${this.id}`)
     element.setAttribute(
       'style',
       `
