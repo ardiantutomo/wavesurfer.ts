@@ -43,14 +43,14 @@ class Polyline extends EventEmitter<{
   'line-move': [relativeY: number]
 }> {
   private svg: SVGElement
-  private offset: number
+  private padding: number
   private top = 0
 
   constructor(options: Options, wrapper: HTMLElement) {
     super()
 
-    // An offset to make the envelope fit into the SVG
-    this.offset = options.dragPointSize / 2 + 1
+    // An padding to make the envelope fit into the SVG
+    this.padding = options.dragPointSize / 2 + 1
 
     // SVG element
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
@@ -102,7 +102,7 @@ class Polyline extends EventEmitter<{
       }
 
       // On points drag
-      const onDragX = (dx: number, index: number) => {
+      const onDragX = (index: number, dx: number) => {
         const point = polyline.points.getItem(index)
         const newX = point.x + dx
         const { width } = svg.viewBox.baseVal
@@ -115,16 +115,18 @@ class Polyline extends EventEmitter<{
       // Make each point draggable
       const draggables = this.svg.querySelectorAll('circle')
       Array.from(draggables).forEach((draggable, index) => {
-        this.makeDraggable(draggable, (dx) => onDragX(dx, index + 1))
+        this.makeDraggable(draggable, (dx) => onDragX(index + 1, dx))
       })
     }
   }
 
   private makeDraggable(draggable: SVGElement, onDrag: (dx: number, dy: number) => void) {
-    draggable.addEventListener('mousedown', (e) => {
+    draggable.addEventListener('click', (e) => {
       e.preventDefault()
       e.stopPropagation()
+    })
 
+    draggable.addEventListener('mousedown', (e) => {
       let x = e.clientX
       let y = e.clientY
 
@@ -152,7 +154,7 @@ class Polyline extends EventEmitter<{
 
     this.top = height - y * height
 
-    const top = Math.max(this.offset, Math.min(this.top, height - this.offset))
+    const top = Math.max(this.padding, Math.min(this.top, height - this.padding))
 
     this.svg.setAttribute('viewBox', `0 0 ${width} ${height}`)
 
@@ -248,7 +250,7 @@ class EnvelopePlugin extends BasePlugin<EnvelopePluginEvents, EnvelopePluginOpti
     this.polyline = new Polyline(this.options, wrapper)
 
     this.subscriptions.push(
-      this.polyline.on('line-move', (relativeY) => {
+      this.polyline.on('line-move', (relativeY: number) => {
         this.setVolume(this.naturalVolume(relativeY))
       }),
 

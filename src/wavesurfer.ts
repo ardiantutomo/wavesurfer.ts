@@ -50,7 +50,7 @@ export type WaveSurferOptions = {
   autoScroll?: boolean
   /** If autoScroll is enabled, keep the cursor in the center of the waveform during playback */
   autoCenter?: boolean
-  /** The sample rate used to decode audio, defaults to 8000 */
+  /** Decoding sample rate. Doesn't affect the playback. Defaults to 8000 */
   sampleRate?: number
   /** The list of plugins to initialize on start */
   plugins?: GenericPlugin[]
@@ -66,6 +66,7 @@ const defaultOptions = {
   interact: true,
   autoScroll: true,
   autoCenter: true,
+  sampleRate: 8000,
 }
 
 export type WaveSurferEvents = {
@@ -103,7 +104,6 @@ export type WaveSurferEvents = {
 
 class WaveSurfer extends Player<WaveSurferEvents> {
   public options: WaveSurferOptions & typeof defaultOptions
-  private fetcher: Fetcher
   private renderer: Renderer
   private timer: Timer
   private plugins: GenericPlugin[] = []
@@ -125,7 +125,6 @@ class WaveSurfer extends Player<WaveSurferEvents> {
 
     this.options = Object.assign({}, defaultOptions, options)
 
-    this.fetcher = new Fetcher()
     this.timer = new Timer()
 
     this.renderer = new Renderer(
@@ -277,7 +276,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
       this.decodedData = Decoder.createBuffer(channelData, duration)
     } else {
       // Fetch and decode the audio of no pre-computed audio data is provided
-      const audio = await this.fetcher.load(url)
+      const audio = await Fetcher.load(url)
       this.decodedData = await Decoder.decode(audio, this.options.sampleRate)
     }
 

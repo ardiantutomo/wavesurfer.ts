@@ -66,12 +66,7 @@ function playNote(frequency, modulationFrequency, modulationDepth, duration) {
 
   const voice = voices[lastVoice]
 
-  const {
-    carrierOsc,
-    modulatorOsc,
-    modulationGain,
-    outputGain,
-  } = voice
+  const { carrierOsc, modulatorOsc, modulationGain, outputGain } = voice
 
   carrierOsc.frequency.value = frequency
   modulatorOsc.frequency.value = modulationFrequency
@@ -104,7 +99,7 @@ function createPianoRoll() {
 
   const pianoRoll = document.getElementById('pianoRoll')
   const qwerty = "`1234567890-=qwertyuiop[]asdfghjkl;'zxcvbnm,./üä"
-  const capsQwerty = "~!@#$%^&*()_+QWERTYUIOP{}ASDFGHJKL:\"ZXCVBNM<>?üä"
+  const capsQwerty = '~!@#$%^&*()_+QWERTYUIOP{}ASDFGHJKL:"ZXCVBNM<>?üä'
 
   const onKeyDown = (freq) => {
     const modulationIndex = parseFloat(document.getElementById('modulationIndex').value)
@@ -187,7 +182,7 @@ function randomizeFmParams() {
 // Draw the waveform
 function drawWaveform() {
   // Get the waveform data from the analyser
-  analyser.getFloatTimeDomainData(dataArray);
+  analyser.getFloatTimeDomainData(dataArray)
   const duration = document.getElementById('duration').valueAsNumber
   waveform && wavesurfer.load('', [dataArray], duration)
 }
