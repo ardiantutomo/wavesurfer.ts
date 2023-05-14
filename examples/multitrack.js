@@ -3,14 +3,14 @@
 // Import wavesurfer and plugins
 import Multitrack from 'https://unpkg.com/wavesurfer.js@alpha/dist/plugins/multitrack.js'
 
-// If you prefer a CDN, use this instead:
+// If you prefer a script tag, use this instead:
 /*
   <script>
     window.WaveSurfer = {}
   </script>
   <script src="https://unpkg.com/wavesurfer.js@alpha/dist/wavesurfer.Multitrack.min.js"></script>
   <script>
-    const Multitrack = window.WaveSurfer.Multitrack
+    window.Multitrack = window.WaveSurfer.Multitrack
   </script>
 */
 
@@ -24,10 +24,10 @@ const multitrack = Multitrack.create(
     {
       id: 1,
       draggable: false,
-      startPosition: 10, // start time relative to the entire multitrack
+      startPosition: 14, // start time relative to the entire multitrack
       url: '/examples/audio/librivox.mp3',
       fadeInEnd: 5,
-      fadeOutStart: 75,
+      fadeOutStart: 250,
       volume: 1,
       options: {
         waveColor: 'hsl(46, 87%, 49%)',

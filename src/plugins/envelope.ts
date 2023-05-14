@@ -56,7 +56,7 @@ class Polyline extends EventEmitter<{
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
     svg.setAttribute('width', '100%')
     svg.setAttribute('height', '100%')
-    svg.setAttribute('viewBox', `0 0 ${wrapper.clientWidth} ${wrapper.clientHeight}`)
+    svg.setAttribute('viewBox', '0 0 0 0')
     svg.setAttribute('preserveAspectRatio', 'none')
     svg.setAttribute('style', 'position: absolute; left: 0; top: 0; z-index: 4; pointer-events: none;')
     svg.setAttribute('part', 'envelope')
@@ -161,7 +161,7 @@ class Polyline extends EventEmitter<{
 
     this.top = height - y * height
 
-    const top = Math.max(this.padding, Math.min(this.top, height - this.padding))
+    const paddedTop = Math.max(this.padding, Math.min(this.top, height - this.padding))
 
     this.svg.setAttribute('viewBox', `0 0 ${width} ${height}`)
 
@@ -170,17 +170,17 @@ class Polyline extends EventEmitter<{
     points.getItem(0).x = x1 * width
     points.getItem(0).y = height
     points.getItem(1).x = x2 * width
-    points.getItem(1).y = top
+    points.getItem(1).y = paddedTop
     points.getItem(2).x = x3 * width
-    points.getItem(2).y = top
+    points.getItem(2).y = paddedTop
     points.getItem(3).x = x4 * width
     points.getItem(3).y = height
 
     const line = this.svg.querySelector('line') as SVGLineElement
     line.setAttribute('x1', points.getItem(1).x.toString())
     line.setAttribute('x2', points.getItem(2).x.toString())
-    line.setAttribute('y1', top.toString())
-    line.setAttribute('y2', top.toString())
+    line.setAttribute('y1', paddedTop.toString())
+    line.setAttribute('y2', paddedTop.toString())
 
     const circles = this.svg.querySelectorAll('circle')
     Array.from(circles).forEach((circle, i) => {
@@ -237,7 +237,9 @@ class EnvelopePlugin extends BasePlugin<EnvelopePluginEvents, EnvelopePluginOpti
     this.initFadeEffects()
 
     this.subscriptions.push(
-      this.wavesurfer.on('decode', (duration) => {
+      this.wavesurfer.on('redraw', () => {
+        const duration = this.wavesurfer?.getDuration()
+        if (!duration) return
         this.options.fadeInStart = this.options.fadeInStart || 0
         this.options.fadeOutEnd = this.options.fadeOutEnd || duration
         this.options.fadeInEnd = this.options.fadeInEnd || this.options.fadeInStart
@@ -245,8 +247,6 @@ class EnvelopePlugin extends BasePlugin<EnvelopePluginEvents, EnvelopePluginOpti
         this.renderPolyline()
       }),
     )
-
-    this.subscriptions.push(this.wavesurfer.on('redraw', () => this.renderPolyline()))
   }
 
   private initSvg() {

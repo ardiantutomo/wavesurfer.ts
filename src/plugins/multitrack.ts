@@ -152,6 +152,7 @@ class MultiTrack extends EventEmitter<MultitrackEvents> {
       cursorColor: 'transparent',
       cursorWidth: 0,
       interact: false,
+      hideScrollbar: true,
     })
 
     // Regions and markers
