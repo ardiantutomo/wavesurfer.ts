@@ -3,6 +3,9 @@
  *
  * Render a spectrogram visualisation of the audio.
  *
+ * @author Pavel Denisov (https://github.com/akreal)
+ * @see https://github.com/wavesurfer-js/wavesurfer.js/pull/337
+ *
  * @example
  * // ... initialising wavesurfer with the plugin
  * var wavesurfer = WaveSurfer.create({
