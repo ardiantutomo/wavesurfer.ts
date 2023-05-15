@@ -20,7 +20,7 @@ export type TimelinePluginOptions = {
   /** Interval between secondary numeric labels */
   secondaryLabelInterval?: number
   /** Custom inline style to apply to the container */
-  style?: CSSStyleDeclaration | string
+  style?: Partial<CSSStyleDeclaration> | string
 }
 
 const defaultOptions = {
