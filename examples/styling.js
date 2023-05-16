@@ -37,6 +37,11 @@
         font-family: fantasy;
         text-decoration: underline;
       }
+
+      #waveform ::part(region-handle-right) {
+        border-right-width: 4px !important;
+        border-right-color: #fff000 !important;
+      }
     </style>
 
     <div id="waveform"></div>

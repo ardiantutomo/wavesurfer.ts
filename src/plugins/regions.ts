@@ -165,6 +165,7 @@ export class Region extends EventEmitter<RegionEvents> {
       } else {
         this.content = content
       }
+      this.content.setAttribute('part', 'region-content')
       element.appendChild(this.content)
     }
 
@@ -187,6 +188,8 @@ export class Region extends EventEmitter<RegionEvents> {
         word-break: keep-all;
       `,
       )
+      leftHandle.setAttribute('part', 'region-handle region-handle-left')
+
       const rightHandle = leftHandle.cloneNode() as HTMLElement
       rightHandle.setAttribute('data-resize', 'right')
       rightHandle.style.left = ''
@@ -194,6 +197,7 @@ export class Region extends EventEmitter<RegionEvents> {
       rightHandle.style.borderRight = rightHandle.style.borderLeft
       rightHandle.style.borderLeft = ''
       rightHandle.style.borderRadius = '0 2px 2px 0'
+      rightHandle.setAttribute('part', 'region-handle region-handle-right')
 
       element.appendChild(leftHandle)
       element.appendChild(rightHandle)
