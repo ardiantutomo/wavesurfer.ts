@@ -199,7 +199,7 @@ class WaveSurfer extends Player<WaveSurferEvents> {
           const newTime = this.getCurrentTime() + this.getDuration() * relativeX
           const progress = newTime / this.getDuration()
           this.renderer.renderProgress(progress, this.isPlaying())
-          this.setTime(newTime)
+          this.canPlay && this.setTime(newTime)
           this.emit('interaction')
         }
       }),
