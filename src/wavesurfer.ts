@@ -1,9 +1,9 @@
-import Fetcher from './fetcher.js'
-import Decoder from './decoder.js'
-import Renderer, { type RendererStyleOptions } from './renderer.js'
-import Player from './player.js'
-import Timer from './timer.js'
 import type { GenericPlugin } from './base-plugin.js'
+import Decoder from './decoder.js'
+import Fetcher from './fetcher.js'
+import Player from './player.js'
+import Renderer, { type RendererStyleOptions } from './renderer.js'
+import Timer from './timer.js'
 
 export type WaveSurferOptions = {
   /** HTML element or CSS selector */
@@ -197,7 +197,9 @@ class WaveSurfer extends Player<WaveSurferEvents> {
       this.renderer.on('drag', (relativeX) => {
         if (this.options.interact) {
           const newTime = this.getCurrentTime() + this.getDuration() * relativeX
-          this.canPlay && this.setTime(newTime)
+          const progress = newTime / this.getDuration()
+          this.renderer.renderProgress(progress, this.isPlaying())
+          this.setTime(newTime)
           this.emit('interaction')
         }
       }),
