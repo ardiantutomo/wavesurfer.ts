@@ -46,6 +46,7 @@ class Renderer extends EventEmitter<RendererEvents> {
   private channelData: ChannelData | null = null
   private duration: number | null = null
   private resizeObserver: ResizeObserver | null = null
+  private isDragging = false
 
   constructor(params: RendererRequiredParams, options: RendererStyleOptions) {
     super()
@@ -77,6 +78,7 @@ class Renderer extends EventEmitter<RendererEvents> {
   private initEvents() {
     // Add a click listener
     this.wrapper.addEventListener('click', (e) => {
+      if (this.isDragging) return
       const rect = this.wrapper.getBoundingClientRect()
       const x = e.clientX - rect.left
       const relativeX = x / rect.width
@@ -88,10 +90,11 @@ class Renderer extends EventEmitter<RendererEvents> {
       let x = e.clientX
       let firstMove = true
       const move = (e: MouseEvent) => {
+        this.isDragging = true
         const dx = e.clientX - x
+        const rect = this.wrapper.getBoundingClientRect()
         x = e.clientX
         if (dx !== 0) {
-          const rect = this.wrapper.getBoundingClientRect()
           if (firstMove) {
             firstMove = false
             this.emit('click', (x - rect.left) / rect.width)
@@ -102,6 +105,9 @@ class Renderer extends EventEmitter<RendererEvents> {
       const up = () => {
         document.removeEventListener('mousemove', move)
         document.removeEventListener('mouseup', up)
+        setTimeout(() => {
+          this.isDragging = false
+        }, 500)
       }
       document.addEventListener('mousemove', move)
       document.addEventListener('mouseup', up)
